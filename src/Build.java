@@ -148,6 +148,42 @@ public class Build {
    * @return a set of values that cannot be reached from the starting value
    */
   public static <T> Set<T> unreachable(Map<T, List<T>> graph, T starting) {
-    return new HashSet<>();
+    Set<T> visited = new HashSet<>();
+    
+    // this will prevent duplicates because it is a set
+    Set<T> unreachable = new HashSet<>();
+
+    unreachable(graph, starting, visited);
+
+    // add all the keys (Set of keys) to unreachable (addAll adds collections (set/list))
+    // because there cannot be duplicates we do not need to worry about duplicate key/value pairs or items that loop back
+    // https://docs.oracle.com/javase/8/docs/api/java/util/AbstractCollection.html#addAll-java.util.Collection-
+    unreachable.addAll(graph.keySet());
+    
+    // add all the values by going through the lists (graph.values() returns a list of lists) adding each list to the the unreachable set
+    // Default list also supports addAll
+    // https://docs.oracle.com/javase/8/docs/api/java/util/List.html#addAll-java.util.Collection-
+    for (List<T> neighbors : graph.values()) {
+      unreachable.addAll(neighbors);
+    } 
+
+    // remove all the items in reachable that are on the visited list
+    // this should leave behind any items which cannot be reached
+    // https://docs.oracle.com/javase/8/docs/api/java/util/AbstractSet.html#removeAll-java.util.Collection-
+    unreachable.removeAll(visited);
+
+    return unreachable;
+  }
+
+    public static <T> void unreachable(Map<T, List<T>> graph, T starting, Set<T> visited) {
+    if (visited.contains(starting) || !graph.containsKey(starting)) return;
+      
+    visited.add(starting);
+    
+    if (graph.get(starting) != null || !graph.get(starting).isEmpty()) {
+      for (T next : graph.get(starting)) {
+      unreachable(graph, next, visited);
+      }
+    }
   }
 }
