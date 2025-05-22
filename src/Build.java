@@ -83,6 +83,27 @@ public class Build {
    * @param <T> the type of values stored in the vertices
    */
   public static <T> void printSelfLoopers(Vertex<T> vertex) {
+    if (vertex == null) return;
+
+    Set<Vertex<T>> visited = new HashSet<>();
+
+    printSelfLoopers(vertex, visited);
+  }
+
+  public static <T> void printSelfLoopers(Vertex<T> vertex, Set<Vertex<T>> visited) {
+    if (vertex == null || visited.contains(vertex)) return;
+    
+    visited.add(vertex);
+    
+    if (vertex.neighbors != null && !vertex.neighbors.isEmpty()) {
+      if (vertex.neighbors.contains(vertex)) {
+        System.out.println(vertex.data);
+      }
+
+      for (Vertex<T> neighbor : vertex.neighbors) {
+        printSelfLoopers(neighbor, visited);
+      }
+    }
   }
 
   /**
@@ -94,8 +115,28 @@ public class Build {
    * @return true if the destination is reachable from the start, false otherwise
    */
   public static boolean canReach(Airport start, Airport destination) {
+    if (start == null || destination == null) return false;
+    if (start == destination) return true;
+
+    Set<Airport> visited = new HashSet<>();
+    return canReach(start, destination, visited);
+  }
+
+  public static boolean canReach(Airport start, Airport destination, Set<Airport> visited) {
+    if (start == null || visited.contains(start)) return false;
+    if (start == destination) return true;
+
+    visited.add(start);
+    List<Airport> flights = start.getOutboundFlights();
+
+    if (flights != null && !flights.isEmpty()) {
+      for (Airport airport : flights) {
+        if (canReach(airport, destination, visited)) return true;
+      }
+    }
     return false;
   }
+
 
   /**
    * Returns the set of all values in the graph that cannot be reached from the given starting value.
